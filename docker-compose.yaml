@@ -58,6 +58,17 @@ services:
     networks:
       - wpNetwork
 
+  # Node.js for Gutenberg Development 
+  node:
+    image: node:20 
+    tty: true 
+    stdin_open: true 
+    volumes:
+      - ./:/var/www/html
+    command: tail -f /dev/null 
+    networks:
+      - wpNetwork
+
 networks:
   wpNetwork:
 

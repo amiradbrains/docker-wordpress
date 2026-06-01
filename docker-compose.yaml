@@ -40,7 +40,7 @@ services:
     environment:
       WORDPRESS_DB_HOST: db:3306 # WordPress Default Port
       WORDPRESS_DB_USER: wordpress # Same as Database
-      WORDPRESS_DB_PASSWORD: wordpres # Same as Database
+      WORDPRESS_DB_PASSWORD: wordpress # Same as Database
     networks:
       - wpNetwork
 

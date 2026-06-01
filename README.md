@@ -1,77 +1,275 @@
-# docker-wordpress
+# WordPress Docker Development Environment
 
-## 📝 Why?
-You can use docker if you want to share your WordPress project with your client. It will help you to share your project with clients in an easy way. You already know if you use docker then your client does not need to set up a WordPress environment simply if he has docker that's great.  I can do this fast. You can use any one of them.
+Beginner-friendly local WordPress setup using Docker.
 
-## 🛠 Code
+This setup includes:
+
+* WordPress
+* MySQL
+* phpMyAdmin
+* MailHog (Email Testing)
+
+---
+
+# Requirements
+
+Install:
+
+* Docker
+* Docker Compose
+
+## Ubuntu / Debian Installation
+
 ```bash
-# YAML is a human-readable data-serialization language. It is commonly used for configuration files and in applications where data is being stored or transmitted. 
+sudo apt update
 
-version: '3.1'  # Compose file versions
-
-services:
-  # mysql Database
-  db:
-    image: mysql:5.7
-    volumes: 
-      - db_data:/var/lib/mysql
-    restart: always #Database will restart with container
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: WordPress
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-    networks:
-      - wpNetwork #it can be any name
-  # phpmyadmin
-  phpmyadmin:
-    depends_on:
-      - db
-    image: phpmyadmin # Please use image: phpmyadmin instead of image: phpmyadmin/phpmyadmin for better security
-    restart: always 
-    ports:
-      - "8080:80" # 80 HTTP port
-    environment:
-      PMA_HOST: db
-      MYSQL_ROOT_PASSWORD: password
-    networks:
-      - wpNetwork  # should be same as Database
-
-  #WordPress
-  wordpress:
-    depends_on:
-      - db
-    image: wordpress:latest
-    ports:
-      - "8000:80"
-    restart: always
-    volumes: ["./:/var/www/html"]
-    environment:
-      WORDPRESS_DB_HOST: db:3306 # mysql Default Port
-      WORDPRESS_DB_USER: user # Same as Database
-      WORDPRESS_DB_PASSWORD: password # Same as Database
-      WORDPRESS_DB_NAME: WordPress
-    networks:
-      - wpNetwork   # should be same as Database
-networks:
-  wpNetwork:
-volumes:
-  db_data: 
+sudo apt install docker.io docker compose -y
 ```
 
-## 💻 Tarminal code
+Enable Docker:
+
 ```bash
-  docker-compose up -d
+sudo systemctl enable docker
+sudo systemctl start docker
 ```
 
+Check installation:
 
+```bash
+docker --version
+docker compose --version
+```
 
-## 🧑‍💻 Contributors
-- [@Ali Hossain](https://github.com/shovoalways/)
+---
 
+# Project Structure
 
-## 🥰 Follow me
-- [@Github](https://github.com/shovoalways/) 
-- [@Facebook](https://facebook.com/shovoalways/) 
-- [@Twitter](https://twitter.com/shovoalways/) 
-- [@Instagram](https://instagram.com/shovoalways/) 
+```text
+project-folder/
+│
+├── docker-compose.yml
+├── wp-content/
+├── wp-config.php
+└── other wordpress files...
+```
+
+---
+
+# Start Project
+
+Open terminal inside project folder:
+
+```bash
+docker compose up -d --build
+```
+
+---
+
+# Stop Project
+
+```bash
+docker compose down
+```
+
+Remove containers + database:
+
+```bash
+docker compose down -v
+```
+
+---
+
+# Access URLs
+
+## WordPress
+
+```text
+http://localhost:8080
+```
+
+## phpMyAdmin
+
+```text
+http://localhost:8081
+```
+
+## MailHog
+
+```text
+http://localhost:8025
+```
+
+---
+
+# Database Credentials
+
+| Setting  | Value     |
+| -------- | --------- |
+| Database | wordpress |
+| Username | wordpress |
+| Password | wordpress |
+| Host     | db        |
+
+---
+
+# phpMyAdmin Login
+
+| Setting  | Value    |
+| -------- | -------- |
+| Server   | db       |
+| Username | root     |
+| Password | password |
+
+---
+
+# MailHog Setup for WordPress SMTP
+
+Install plugin:
+
+* WP Mail SMTP
+
+Go to:
+
+```text
+WordPress Dashboard
+→ WP Mail SMTP
+→ Settings
+```
+
+Use these settings:
+
+| Setting        | Value      |
+| -------------- | ---------- |
+| Mailer         | Other SMTP |
+| SMTP Host      | mailhog    |
+| SMTP Port      | 1025       |
+| Encryption     | None       |
+| Authentication | OFF        |
+
+Save settings.
+
+Send test email.
+
+View emails:
+
+```text
+http://localhost:8025
+```
+
+---
+
+# Useful Docker Commands
+
+## Check Running Containers
+
+```bash
+docker ps
+```
+
+## View Logs
+
+```bash
+docker compose logs
+```
+
+Specific service logs:
+
+```bash
+docker compose logs wordpress
+docker compose logs db
+```
+
+---
+
+# Common Issues
+
+## Error Establishing Database Connection
+
+Check:
+
+```yaml
+WORDPRESS_DB_PASSWORD: wordpress
+```
+
+Must match:
+
+```yaml
+MYSQL_PASSWORD: wordpress
+```
+
+Then rebuild:
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+---
+
+## Port Already In Use
+
+Change ports:
+
+```yaml
+ports:
+  - "8090:80"
+```
+
+Then access:
+
+```text
+http://localhost:8090
+```
+
+---
+
+# Container Architecture
+
+```text
+Browser
+   ↓
+WordPress Container
+(Apache + PHP + WordPress)
+   ↓
+MySQL Container
+```
+
+The official WordPress Docker image already includes:
+
+* Apache
+* PHP
+* WordPress
+
+So no separate PHP container is required.
+
+---
+
+# Verify PHP Inside Container
+
+```bash
+docker exec -it <wordpress-container-name> bash
+```
+
+Then:
+
+```bash
+php -v
+apache2 -v
+```
+
+---
+
+# Restart Containers
+
+```bash
+docker compose restart
+```
+
+---
+
+# Update Containers
+
+```bash
+docker compose pull
+docker compose up -d
+```
